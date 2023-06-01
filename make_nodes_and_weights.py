@@ -10,6 +10,7 @@ from modepy.quadrature.vioreanu_rokhlin \
 
 hmax = 0.025
 quad_order = 2
+use_quadratic_triangles_on_boundary = True
 
 A = 0
 N = 0
@@ -62,7 +63,7 @@ nodes, weights = [], []
 for face in faces:
     num_bd = (face < n).sum()
     assert num_bd <= 2
-    if num_bd < 2:
+    if not use_quadratic_triangles_on_boundary or num_bd < 2:
         x0, x1, x2 = points[face]
         dx1, dx2 = x1 - x0, x2 - x0
         jac = abs(dx1[0]*dx2[1] - dx1[1]*dx2[0])
@@ -124,6 +125,10 @@ weights = np.array(weights)
 t1 = time.time() # finished!
 
 print(f'built {nodes.size} node quadrature in {t1 - t0:.1f} s ({nodes.size/(t1 - t0):.1f} pps)')
+
+if A == 0 and N == 0:
+    disk_area_rel_error = abs(np.pi - weights.sum())/np.pi
+    print(f'A == 0 && N == 0: rel error for area of disk is {disk_area_rel_error:.1E}')
 
 Tplot = np.linspace(0, 2*np.pi, 201)
 
